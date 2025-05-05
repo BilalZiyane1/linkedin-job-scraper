@@ -1,0 +1,33 @@
+name: Daily LinkedIn Scraper
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Runs at 08:00 UTC daily
+  workflow_dispatch:
+
+jobs:
+  scrape-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Add credentials
+      run: |
+        echo "${{ secrets.GDRIVE_CREDENTIALS }}" > credentials.json
+
+    - name: Run scraper
+      run: python scraper.py
+
+    - name: Upload to Google Drive
+      run: python upload_to_drive.py
