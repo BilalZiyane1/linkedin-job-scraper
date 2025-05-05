@@ -1,39 +1,46 @@
 import os
-import glob
+import io
+import json
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
-FOLDER_ID = "1ySUMedn2pS7js3uq_RrZrVFYG16zDbqg"  # Replace this with your real folder ID
+# Get credentials from the GITHUB secret
+service_account_info = json.loads(os.environ["GDRIVE_CREDENTIALS"])
+credentials = service_account.Credentials.from_service_account_info(
+    service_account_info,
+    scopes=["https://www.googleapis.com/auth/drive.file"]
+)
 
-def upload_latest_csv():
-    list_of_files = glob.glob('linkedin_jobs_*.csv')
-    if not list_of_files:
-        print("No CSV file found.")
-        return
+# Build the Drive service
+service = build("drive", "v3", credentials=credentials)
 
-    latest_file = max(list_of_files, key=os.path.getctime)
-
-    creds = service_account.Credentials.from_service_account_file(
-        'credentials.json',
-        scopes=['https://www.googleapis.com/auth/drive.file']
-    )
-
-    service = build('drive', 'v3', credentials=creds)
+def upload_to_drive(file_path, drive_folder_id=None):
+    file_name = os.path.basename(file_path)
 
     file_metadata = {
-        'name': os.path.basename(latest_file),
-        'parents': [FOLDER_ID]
+        "name": file_name,
+        "mimeType": "application/vnd.google-apps.spreadsheet"
     }
 
-    media = MediaFileUpload(latest_file, mimetype='text/csv')
+    if drive_folder_id:
+        file_metadata["parents"] = [drive_folder_id]
+
+    media = MediaFileUpload(file_path, mimetype="text/csv", resumable=True)
+
     uploaded_file = service.files().create(
         body=file_metadata,
         media_body=media,
-        fields='id'
+        fields="id, name, webViewLink"
     ).execute()
 
-    print(f"File '{latest_file}' uploaded with ID: {uploaded_file['id']}")
+    print(f"✅ File '{uploaded_file['name']}' uploaded successfully!")
+    print(f"🔗 View it at: {uploaded_file['webViewLink']}")
+    return uploaded_file["id"]
 
 if __name__ == "__main__":
-    upload_latest_csv()
+    import sys
+    if len(sys.argv) < 2:
+        print("❌ Please provide the CSV file path to upload.")
+    else:
+        upload_to_drive(sys.argv[1])

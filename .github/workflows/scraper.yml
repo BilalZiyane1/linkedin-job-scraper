@@ -1,5 +1,8 @@
 name: Daily LinkedIn Scraper
 
+env:
+  GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
+
 on:
   schedule:
     - cron: '0 8 * * *'  # Runs at 08:00 UTC daily
@@ -22,12 +25,12 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    - name: Add credentials
+    - name: Run scraper and capture output filename
+      id: scrape
       run: |
-        echo "${{ secrets.GDRIVE_CREDENTIALS }}" > credentials.json
-
-    - name: Run scraper
-      run: python scraper.py
-
+        OUTPUT=$(python scraper.py | tail -n 1)
+        echo "file_name=$OUTPUT" >> $GITHUB_OUTPUT
+    
     - name: Upload to Google Drive
-      run: python upload_to_drive.py
+      run: python upload_to_drive.py ${{ steps.scrape.outputs.file_name }}
+    
