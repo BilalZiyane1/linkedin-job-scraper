@@ -9,7 +9,7 @@ from googleapiclient.http import MediaFileUpload
 service_account_info = json.loads(os.environ["GDRIVE_CREDENTIALS"])
 credentials = service_account.Credentials.from_service_account_info(
     service_account_info,
-    scopes=["https://www.googleapis.com/auth/drive.file"]
+    scopes=["https://www.googleapis.com/auth/drive"]  # ✅ broader scope
 )
 
 # Build Drive API service
@@ -38,22 +38,33 @@ def upload_to_drive(file_path, drive_folder_id=None):
     print(f"🔗 View it at: {uploaded_file['webViewLink']}")
 
     # 🔥 Share the file with yourself explicitly
-    YOUR_EMAIL = "your.email@gmail.com"  # <-- replace this with your actual Google account
+    YOUR_EMAIL = "bilal.ziyane-etu@etu.univh2c.ma"  # ⬅️ Replace with your real email
     permission = {
         "type": "user",
         "role": "writer",
         "emailAddress": YOUR_EMAIL
     }
 
-    service.permissions().create(
-        fileId=uploaded_file["id"],
-        body=permission,
-        fields="id"
-    ).execute()
+    try:
+        service.permissions().create(
+            fileId=uploaded_file["id"],
+            body=permission,
+            fields="id",
+            sendNotificationEmail=False
+        ).execute()
+        print(f"👤 Shared with: {YOUR_EMAIL}")
+    except Exception as e:
+        print(f"❌ Failed to share file: {e}")
 
     return uploaded_file["id"]
 
-
+# Optional CLI use
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) < 2:
+        print("❌ Please provide the CSV file path to upload.")
+    else:
+        upload_to_drive(sys.argv[1])
 
 
 # import os
