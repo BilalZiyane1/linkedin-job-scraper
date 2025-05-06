@@ -1,36 +1,24 @@
-name: Daily LinkedIn Scraper
-
-env:
-  GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
-
-on:
-  schedule:
-    - cron: '0 8 * * *'  # Runs at 08:00 UTC daily
-  workflow_dispatch:
-
 jobs:
-  scrape-and-upload:
+  run-scraper:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-    - name: Run scraper and capture output filename
-      id: scrape
-      run: |
-        OUTPUT=$(python scraper.py | tail -n 1)
-        echo "file_name=$OUTPUT" >> $GITHUB_OUTPUT
-    
-    - name: Upload to Google Drive
-      run: python upload_to_drive.py ${{ steps.scrape.outputs.file_name }}
-    
+      - name: Run scraper and save filename
+        id: scrape
+        run: |
+          FILENAME=$(python scraper.py)
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+
+      - name: Upload to Google Drive
+        run: python upload_to_drive.py "$FILENAME"
+        env:
+          GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
