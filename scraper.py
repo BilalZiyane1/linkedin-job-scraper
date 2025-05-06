@@ -146,14 +146,25 @@ def scrape_job_details(job):
     return details
 
 def upload_to_gdrive(file_path, folder_id):
+    # Load credentials from environment variable
     creds = json.loads(os.getenv("GDRIVE_CREDENTIALS"))
-    with open("temp_creds.json", "w") as f:
+    with open("service_account.json", "w") as f:
         json.dump(creds, f)
 
+    # Set up PyDrive with service account
     gauth = GoogleAuth()
-    gauth.LoadCredentialsFile("temp_creds.json")
-    if not gauth.credentials:
-        gauth.LocalWebserverAuth()
+    gauth.settings['get_refresh_token'] = False
+    gauth.settings['save_credentials'] = False
+    gauth.settings['oauth_scope'] = ['https://www.googleapis.com/auth/drive']
+    gauth.settings['client_config_backend'] = 'service'
+    gauth.settings['service_config'] = {
+        "client_email": creds["client_email"],
+        "client_id": creds["client_id"],
+        "private_key": creds["private_key"],
+        "private_key_id": creds["private_key_id"],
+        "type": creds["type"]
+    }
+
     gauth.ServiceAuth()
     drive = GoogleDrive(gauth)
 
@@ -164,6 +175,7 @@ def upload_to_gdrive(file_path, folder_id):
     file_drive.SetContentFile(file_path)
     file_drive.Upload()
     print(f"Uploaded to Google Drive: {file_path}")
+
 
 def main():
     seen_job_ids = set()
