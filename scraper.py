@@ -240,7 +240,7 @@ MAX_RESULTS_PER_QUERY = 1000
 RESULTS_PER_PAGE = 25
 MAX_THREADS = 5
 DELAY_RANGE = (1, 2)
-MAX_JOBS_TOTAL = 10  # 👈 limit to 10 jobs
+MAX_JOBS_TOTAL = 15  # 👈 limit to 10 jobs
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
