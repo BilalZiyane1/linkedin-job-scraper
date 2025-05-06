@@ -15,7 +15,7 @@ credentials = service_account.Credentials.from_service_account_info(
 # Build Drive API service
 service = build("drive", "v3", credentials=credentials)
 
-def upload_to_drive(file_path, drive_folder_id=None):
+def upload_to_drive(file_path, drive_folder_id="1ySUMedn2pS7js3uq_RrZrVFYG16zDbqg"):
     file_name = os.path.basename(file_path)
 
     file_metadata = {
