@@ -1,4 +1,20 @@
-#TEST
+# TEST
+import os
+import json
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+# Load service account credentials from environment
+service_account_info = json.loads(os.environ["GDRIVE_CREDENTIALS"])
+credentials = service_account.Credentials.from_service_account_info(
+    service_account_info,
+    scopes=["https://www.googleapis.com/auth/drive.file"]
+)
+
+# Build Drive API service
+service = build("drive", "v3", credentials=credentials)
+
 def upload_to_drive(file_path, drive_folder_id=None):
     file_name = os.path.basename(file_path)
 
@@ -36,7 +52,6 @@ def upload_to_drive(file_path, drive_folder_id=None):
     ).execute()
 
     return uploaded_file["id"]
-
 
 
 
