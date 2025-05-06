@@ -196,8 +196,8 @@ def main():
     return filename
 
 if __name__ == "__main__":
-    csv_file = main()
-    upload_to_drive(csv_file, drive_folder_id="1ySUMedn2pS7js3uq_RrZrVFYG16zDbqg")
+    filename = main()
+    print(filename)  # Only output the filename, clean for GitHub Actions
 
 
 
